@@ -1,0 +1,80 @@
+{
+  "company": "trustai",
+  "board": {
+    "backend": "repo",
+    "tasks_file": ".memory/tasks.yaml",
+    "memory_dir": ".memory"
+  },
+  "gates": {
+    "default": "uv run pytest -m \"not live\" && uv run ruff check src/ tests/ && uv run ruff format --check src/ tests/ && uv run mypy src/",
+    "live_smoke": "uv run pytest -m live",
+    "readme_table": "uv run python scripts/gen_tool_table.py --check"
+  },
+  "routing": {
+    "critical": "@critical",
+    "feature": "@feature",
+    "mechanical": "@mechanical",
+    "reduction": "@reduction"
+  },
+  "effort": {
+    "critical": "xhigh",
+    "feature": "xhigh",
+    "mechanical": "medium",
+    "reduction": "low"
+  },
+  "max_parallel": 3,
+  "review": {
+    "default": "medium",
+    "flagged_paths": {
+      "src/gmail_mcp/auth.py": "high+security-review",
+      "src/gmail_mcp/config.py": "high+security-review",
+      "src/gmail_mcp/scope.py": "high+security-review",
+      "src/gmail_mcp/client.py": "high",
+      "src/gmail_mcp/login.py": "high+security-review",
+      ".github/workflows/*": "high+security-review"
+    }
+  },
+  "creds": {
+    "db": "staging-or-local-only"
+  },
+  "caps": {
+    "loop_iterations": 8,
+    "target_max_turns": 25
+  },
+  "interactive_only": [
+    "auth spike",
+    "schema review",
+    "architecture / strangler design",
+    "cutover",
+    "product decision",
+    "GCP project / OAuth consent screen / client creation per company (Google Cloud console)",
+    "first login per company (Google consent with the company account) — the refresh token goes to a 0600 file or 1Password, never into a session",
+    "Workspace admin API controls (trust the client ID)",
+    "PyPI / OIDC trusted-publishing setup",
+    "making the GitHub repo public + release cut",
+    "live smoke against the real mailbox (read-only)",
+    "alejlatorre-mcps swap of the per-company Gmail entries + hot deploy with live sessions"
+  ],
+  "reversibility_triggers": [
+    {
+      "decision": "publish to PyPI as `amazing-gmail-mcp` (`gmail-mcp` is taken); import package `gmail_mcp`, tool prefix `gmail_`",
+      "trigger": "the user registers the trusted publisher under a different free name",
+      "fallback": "rename dist + console scripts in lockstep on main before the first release; import package and tool prefix never change"
+    },
+    {
+      "decision": "v0.1 requests ONLY gmail.readonly: no scope that can send (gmail.compose and gmail.modify both send; research/2026-11-10-gmail-mcp/00-sintesis.md)",
+      "trigger": "the user wants drafts or label changes",
+      "fallback": "a second, separately named entry per company with its own refresh token and compose/modify scope, behind GMAIL_ALLOW_WRITES; the read-only entry stays as is"
+    },
+    {
+      "decision": "one server entry per company, refresh token from env (1Password), account pinned at startup with users.getProfile == GMAIL_ACCOUNT",
+      "trigger": "a mailbox needs domain-wide delegation (service account) instead of a user grant",
+      "fallback": "an alternative credential source in auth.py behind an explicit env var; the account pin stays mandatory"
+    },
+    {
+      "decision": "project scope = GMAIL_SCOPE_LABEL (labelIds[]) and/or GMAIL_SCOPE_QUERY (parenthesized, unbalanced user queries refused), re-checked after every fetch by id; a filter, not a security boundary",
+      "trigger": "a project needs a boundary the agent cannot leave",
+      "fallback": "a separate Google account or delegated mailbox for that project; never more parsing in the scope module"
+    }
+  ]
+}

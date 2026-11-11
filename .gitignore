@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets: the OAuth client JSON and refresh tokens never enter git
+.env
+.env.*
+!.env.example
+*.token.json
+client_secret*.json
+
+# Loop wave state (machine-local)
+.memory/
+.loop/
+
+# Harness-managed agent worktrees
+.claude/
