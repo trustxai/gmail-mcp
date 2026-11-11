@@ -1,6 +1,6 @@
 [project]
 name = "amazing-gmail-mcp"
-version = "0.0.0"
+version = "0.1.0"
 description = "Read-only MCP server for one Gmail mailbox (gmail.readonly by construction, account pinned, stdio only)."
 readme = "README.md"
 license = "Apache-2.0"
